@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Working notes for coding agents. Useful locally, not part of the package.
+AGENTS.md
+CLAUDE.md
+
+# Copied into the package at build time from the repo root, which is canonical.
+packages/draw/README.md
+packages/draw/LICENSE
+packages/draw/logo.svg
+packages/draw/logo-dark.svg
+.vercel

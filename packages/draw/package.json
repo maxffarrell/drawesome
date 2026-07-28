@@ -1,0 +1,67 @@
+{
+  "name": "drawesome",
+  "version": "0.1.0",
+  "description": "A drawing toolbar for React. Seven pens, an eraser, SVG and PNG export, no dependencies.",
+  "keywords": [
+    "react",
+    "drawing",
+    "canvas",
+    "svg",
+    "freehand",
+    "annotation",
+    "whiteboard",
+    "sketch",
+    "markup",
+    "toolbar"
+  ],
+  "license": "MIT",
+  "author": "Benji Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benjitaylor/drawesome.git"
+  },
+  "homepage": "https://benji.org/drawesome",
+  "bugs": {
+    "url": "https://github.com/benjitaylor/drawesome/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "logo.svg",
+    "logo-dark.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.3",
+    "sass": "^1.80.0",
+    "typescript": "^5.7.0",
+    "esbuild": "^0.27.7"
+  }
+}
