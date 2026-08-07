@@ -25,6 +25,7 @@ export type DebugState = {
   shortcuts: boolean;
   ink: InkMode;
   chrome: boolean;
+  motion: "rise" | "none";
   tooltips: false | "all" | "tools";
   eraser: boolean;
   transparent: boolean;
@@ -53,6 +54,7 @@ export const defaults: DebugState = {
   shortcuts: true,
   ink: "auto",
   chrome: true,
+  motion: "rise",
   tooltips: "all",
   eraser: true,
   transparent: false,
@@ -259,6 +261,28 @@ export function Debug({
             </Toggle>
           );
         })}
+      </Row>
+
+      <Row label="Motion">
+        {(["rise", "none"] as const).map((m) => (
+          <Toggle key={m} on={value.motion === m} onClick={() => set("motion", m)}>
+            {m}
+          </Toggle>
+        ))}
+        {/* Out and back in, so both halves can be watched without having to
+            find the toolbar switch and hit it twice. */}
+        <Toggle
+          on={false}
+          onClick={() => {
+            set("chrome", false);
+            window.setTimeout(() => set("chrome", true), 900);
+          }}
+        >
+          replay
+        </Toggle>
+        <Toggle on={value.chrome} onClick={() => set("chrome", !value.chrome)}>
+          {value.chrome ? "hide" : "show"}
+        </Toggle>
       </Row>
 
       <Row label="Also">

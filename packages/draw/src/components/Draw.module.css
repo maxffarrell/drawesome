@@ -23,17 +23,72 @@
 .toolbar {
   position: absolute;
   z-index: 30;
-  /*
-     Two animations, because the rise and the fade want different curves.
-     
-     On one, the fade inherits the snappy curve — which overshoots, so it is
-     almost fully opaque within the first fifty milliseconds and the bar reads
-     as flashing on and then sliding, rather than fading in. Opacity gets a
-     plain ease-out over a shorter run; the travel keeps the snap.
-  */
+  --sd-motion: 360ms;
+  /* The fade is deliberately shorter than the travel; see below. */
+  --sd-motion-fade: calc(var(--sd-motion) * 0.75);
+}
+
+/*
+ * Arriving and leaving, off whichever edge the bar is on.
+ *
+ * It used to rise vertically whichever edge it was on, so a left or right rail
+ * came up from below and sat down through the canvas — travel across an edge it
+ * wasn't attached to. The direction is the placement's now.
+ *
+ * Two animations rather than one, because the rise and the fade want different
+ * curves. On a single curve the fade inherits the snappy one, which overshoots,
+ * so the bar is almost fully opaque within the first fifty milliseconds and
+ * reads as flashing on and then sliding. Opacity gets a plain ease-out over a
+ * shorter run; the travel keeps the snap.
+ */
+.toolbar[data-motion-in="rise"] {
   animation:
-    sdBarRise 520ms var(--ease-snappy) backwards,
-    sdBarFade 420ms ease-out backwards;
+    sdBarRise var(--sd-motion) var(--ease-snappy) backwards,
+    sdBarFade var(--sd-motion-fade) ease-out backwards;
+}
+
+.toolbar[data-placement="left"][data-motion-in="rise"] {
+  animation-name: sdBarRiseLeft, sdBarFade;
+}
+
+.toolbar[data-placement="right"][data-motion-in="rise"] {
+  animation-name: sdBarRiseRight, sdBarFade;
+}
+
+/*
+ * On the way out, back through the edge it came from — and faster.
+ *
+ * A bar that leaves as slowly as it arrives feels like it is refusing to go.
+ * Dismissal wants to be over; arrival is the part worth watching.
+ */
+.toolbar[data-leaving][data-motion-out="rise"] {
+  animation:
+    sdBarFall calc(var(--sd-motion) * 0.58) var(--ease-settle, ease-in) forwards,
+    sdBarFadeOut calc(var(--sd-motion) * 0.46) ease-in forwards;
+}
+
+.toolbar[data-placement="left"][data-leaving][data-motion-out="rise"] {
+  animation-name: sdBarFallLeft, sdBarFadeOut;
+}
+
+.toolbar[data-placement="right"][data-leaving][data-motion-out="rise"] {
+  animation-name: sdBarFallRight, sdBarFadeOut;
+}
+
+/*
+ * `none` still has to animate, or it never ends.
+ *
+ * The bar is unmounted by its own `animationend`, so a preset that skips the
+ * animation entirely would leave it on screen for good. A single frame at zero
+ * opacity fires the event and reads as instant.
+ */
+.toolbar[data-leaving][data-motion-out="none"] {
+  animation: sdBarFadeOut 1ms linear forwards;
+}
+
+/* Nothing on the way in, and nothing to wait for. */
+.toolbar[data-motion-in="none"] {
+  animation: none;
 }
 
 /*
@@ -89,12 +144,64 @@
   bottom: var(--sd-inset);
 }
 
+/*
+ * `transform`, not `translate`.
+ *
+ * A centred bar is already using the `translate` property to pull itself back
+ * by half its width, and the two are separate properties that compose — so the
+ * travel can be animated here without having to know or restate the centring.
+ */
 @keyframes sdBarRise {
   from {
-    transform: translateY(18px);
+    transform: translateY(13px);
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes sdBarRiseLeft {
+  from {
+    transform: translateX(-13px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sdBarRiseRight {
+  from {
+    transform: translateX(13px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sdBarFall {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes sdBarFallLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes sdBarFallRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(10px);
   }
 }
 
@@ -104,6 +211,28 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes sdBarFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Movement is the flourish; the bar still has to come and go. */
+@media (prefers-reduced-motion: reduce) {
+  .toolbar[data-motion-in="rise"],
+  .toolbar[data-leaving][data-motion-out="rise"] {
+    animation-name: sdBarFade;
+    animation-duration: 120ms;
+    animation-timing-function: linear;
+  }
+  .toolbar[data-leaving][data-motion-out="rise"] {
+    animation-name: sdBarFadeOut;
   }
 }
 

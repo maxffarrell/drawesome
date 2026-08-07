@@ -72,6 +72,19 @@ export type DrawHandle = {
   getSize: () => Board;
 };
 
+/**
+ * `rise` comes in off whichever edge the bar is on and leaves back through it.
+ * `none` is instant, and is also what a reduced-motion setting falls back to.
+ */
+export type MotionPreset = "rise" | "none";
+
+export type MotionOptions = {
+  in?: MotionPreset;
+  out?: MotionPreset;
+  /** Milliseconds, for both directions. */
+  duration?: number;
+};
+
 export type DrawProps = {
   /** Fixed surface size. Omit and it matches the element, which is usually
    * what you want — a fixed board letterboxes inside its container. */
@@ -83,6 +96,13 @@ export type DrawProps = {
   onChange?: (strokes: Stroke[]) => void;
   /** Turn the built-in chrome off and drive it yourself. */
   chrome?: boolean;
+  /**
+   * How the bar arrives and leaves when `chrome` is switched.
+   *
+   * A single name sets both directions; the object form is for when they
+   * differ. `duration` is milliseconds and covers whichever way is playing.
+   */
+  motion?: MotionPreset | MotionOptions;
   /** Which edge the toolbar sits on. */
   placement?: "bottom" | "left" | "right";
   /** How far the bar sits from its edge. A number is pixels. */
@@ -134,6 +154,7 @@ export const Draw = forwardRef<DrawHandle, DrawProps>(function Draw(
     initialStrokes,
     onChange,
     chrome = true,
+    motion,
     placement = "bottom",
     inset,
     align = "center",
@@ -595,6 +616,29 @@ export const Draw = forwardRef<DrawHandle, DrawProps>(function Draw(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collapsed, placement, pin]);
 
+  /*
+   * The bar has to outlive `chrome` going false, or there is nothing left to
+   * animate: React would take the element away on the same frame the prop
+   * changed. `live` is what's mounted, `leaving` is what's playing out, and the
+   * animation itself says when it's over.
+   */
+  const move: MotionOptions = typeof motion === "string" ? { in: motion, out: motion } : (motion ?? {});
+  const enterWith = move.in ?? "rise";
+  const exitWith = move.out ?? move.in ?? "rise";
+  const [live, setLive] = useState(chrome);
+  const [leaving, setLeaving] = useState(false);
+
+  useEffect(() => {
+    if (chrome) {
+      setLeaving(false);
+      setLive(true);
+    } else if (exitWith === "none") {
+      setLive(false);
+    } else {
+      setLeaving(true);
+    }
+  }, [chrome, exitWith]);
+
   return (
     <div
       ref={root}
@@ -615,12 +659,23 @@ export const Draw = forwardRef<DrawHandle, DrawProps>(function Draw(
         className={css.surface}
       />
 
-      {chrome && (
+      {live && (
         <div
           ref={barEl}
           className={css.toolbar}
           data-placement={placement}
           data-align={align}
+          data-motion-in={enterWith}
+          data-motion-out={exitWith}
+          data-leaving={leaving || undefined}
+          onAnimationEnd={(e) => {
+            // Only the bar's own arrival or departure, not a tool's.
+            if (e.target !== e.currentTarget) return;
+            if (leaving) {
+              setLive(false);
+              setLeaving(false);
+            }
+          }}
           data-draggable={draggable && !collapsed ? "" : undefined}
           data-held={held ? "" : undefined}
           style={
@@ -644,6 +699,7 @@ export const Draw = forwardRef<DrawHandle, DrawProps>(function Draw(
               : ({
                   "--sd-inset":
                     typeof inset === "number" ? `${inset}px` : inset,
+                  ...(move.duration ? { "--sd-motion": `${move.duration}ms` } : null),
                   // The end the bar is folding toward, so its scale pulls that
                   // way instead of back toward its own middle.
                   "--fold-origin": foldOrigin,

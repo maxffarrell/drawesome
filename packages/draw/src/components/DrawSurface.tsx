@@ -495,6 +495,16 @@ function isPale(hex: string) {
   return l / 255 > 0.72;
 }
 
+/**
+ * The smallest the ring is ever drawn, in screen pixels.
+ *
+ * The pencil's nib is one unit across, which put the ring at half a pixel: the
+ * cursor simply wasn't there for the tool people reach for first. Below this
+ * the nib is finer than anything that could be drawn to represent it, so the
+ * ring stops reporting size and just says where the point is.
+ */
+const MIN_RADIUS = 3.5;
+
 /** The pointer, drawn as the mark the tool is about to make. */
 function BrushCursor({
   tool,
@@ -505,59 +515,89 @@ function BrushCursor({
   tool: Tool;
   at: { x: number; y: number };
   scale: number;
-  /** So the ring can be drawn the other way round on a dark canvas. */
+  /** Tints the eraser's fill; the rings carry their own contrast. */
   background: string;
 }) {
   const hair = 1 / scale;
   const onDark = !isPale(background) && background !== "transparent";
+  const r = Math.max(tool.size / 2, MIN_RADIUS / scale);
+
+  /*
+   * One ring on a dark canvas, two on a light one.
+   *
+   * The pale ring exists for the case the background prop can't answer: on
+   * paper, the pointer spends most of its time over ink that has already been
+   * laid down, and a dark hairline over a black stroke is nothing. Underneath a
+   * dark hairline it reads as a sliver of light either side of a dark line.
+   *
+   * On a dark canvas that same pair reads as a double outline instead — white,
+   * dark, white — because there is no dark backdrop for the dark line to
+   * disappear into, so both edges of the halo stay visible. Any concentric
+   * sandwich does this; it is only invisible when the outer ring matches what
+   * is behind it. So on dark there is one pale ring and nothing else, which is
+   * legible over dark paper and over dark ink alike.
+   */
+  const stroke = onDark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.62)";
+  const halo = onDark ? null : (
+    <circle
+      cx={at.x}
+      cy={at.y}
+      r={r}
+      fill="none"
+      stroke="rgba(255,255,255,0.92)"
+      strokeWidth={hair * 3}
+    />
+  );
 
   if (tool.kind === "eraser") {
     return (
       <>
+        {halo}
         <circle
           cx={at.x}
           cy={at.y}
-          r={tool.size / 2}
+          r={r}
           fill={onDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
-          stroke={onDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.55)"}
+          stroke={stroke}
           strokeWidth={hair}
         />
         {/* A cross-hair marks the centre: an eraser is aimed, not drawn with. */}
+        {!onDark && (
+          <path
+            d={`M${at.x - 3 * hair} ${at.y}h${6 * hair}M${at.x} ${at.y - 3 * hair}v${6 * hair}`}
+            stroke="rgba(255,255,255,0.9)"
+            strokeWidth={hair * 2.5}
+          />
+        )}
         <path
           d={`M${at.x - 3 * hair} ${at.y}h${6 * hair}M${at.x} ${at.y - 3 * hair}v${6 * hair}`}
-          stroke="rgba(0,0,0,0.45)"
+          stroke={stroke}
           strokeWidth={hair}
         />
       </>
     );
   }
 
-  // Every pen gets the same ring, the nib pens included. Drawing the nib's
-  // own angled edge is more literal but worse to aim with: it changes length
-  // as you turn, so the cursor stops being a reliable indication of where the
-  // mark will land and how big it will be.
+  /*
+   * Every pen gets the same ring, the nib pens included. Drawing the nib's own
+   * angled edge is more literal but worse to aim with: it changes length as you
+   * turn, so the cursor stops being a reliable indication of where the mark will
+   * land and how big it will be.
+   *
+   * One neutral ring, never the ink. Drawing it in the current colour was the
+   * clever version and the wrong one — a pale ink is invisible on pale paper.
+   * Which ink is loaded is already answered by the tool standing lit in the
+   * tray, by the colour in the bar, and by the mark itself the moment you draw.
+   */
   return (
     <>
-      {/*
-        One neutral ring, and nothing else.
-
-        Drawing it in the ink was the clever version and the wrong one. A pale
-        ink is invisible on pale paper, so it needed a dark backing — and a
-        translucent band under a one-pixel line is, visually, a blur on it,
-        which turned the highlighter's cursor into a muddy olive double ring.
-        Two hairlines a fraction apart were worse still: strokes that close
-        never land on the same device pixels and smear together.
-
-        The cursor's job is where the nib is and how big it is. Which ink is on
-        it is already answered by the tool standing lit in the tray, by the
-        colour in the bar, and by the mark itself the moment you draw.
-      */}
+      {halo}
       <circle
         cx={at.x}
         cy={at.y}
-        r={tool.size / 2}
+        r={r}
         fill="none"
-        stroke={onDark ? "rgba(255,255,255,0.62)" : "rgba(0,0,0,0.5)"}
+        stroke={stroke}
         strokeWidth={hair}
       />
     </>

@@ -15,6 +15,7 @@ export default function App() {
         placement={debug.placement}
         theme={debug.theme}
         chrome={debug.chrome}
+        motion={debug.motion}
         depth={debug.depth}
         ink={debug.ink}
         tooltips={debug.tooltips === false ? false : { scope: debug.tooltips }}
