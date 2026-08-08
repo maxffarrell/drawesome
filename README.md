@@ -79,6 +79,7 @@ The eraser takes away area rather than whole strokes, so you can rub out part of
 | `settings` | `"bar" \| "tool"` | `"bar"` | Where size and opacity live |
 | `controls` | `{ color, size, opacity, undo, clear, custom, minimize }` | all `true` | Which built-in controls to show. `custom` is the swatch that opens the hex field and spectrum |
 | `depth` | `"flat" \| "soft" \| "regular" \| "strong"` | `"regular"` | How physical the bar looks |
+| `motion` | `"rise" \| "none" \| { in, out, duration }` | `"rise"` | How the bar arrives and leaves when `chrome` is switched |
 | `theme` | `"light" \| "dark" \| "auto"` | `"light"` | `"auto"` follows the reader's system |
 | `tooltips` | `boolean \| TooltipOptions` | `true` | Hover labels |
 | `shortcuts` | `boolean` | `true` | Single-key shortcuts |

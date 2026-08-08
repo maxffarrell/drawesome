@@ -1,6 +1,20 @@
 import { build } from "esbuild";
 import { execFileSync } from "node:child_process";
 import { copyFileSync, rmSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+/*
+ * Paths here resolve against this file, not against the caller.
+ *
+ * The entry point, `dist` and the copied-in files are all written as relative
+ * paths, and the copies read their sources relative to this module. Left to the
+ * working directory the two disagree the moment the script is run from anywhere
+ * but the package, and a copy whose source and destination resolve to the same
+ * file succeeds without doing anything.
+ */
+const HERE = dirname(fileURLToPath(import.meta.url));
+process.chdir(HERE);
 
 /**
  * Built with esbuild directly rather than through tsup.
@@ -17,6 +31,10 @@ import { copyFileSync, rmSync } from "node:fs";
  * with nothing in between. Types come from tsc.
  */
 const shared = {
+  /* Pinned rather than inherited: esbuild reads the working directory when its
+     service starts, not when the build is configured, so `chdir` alone doesn't
+     settle it. */
+  absWorkingDir: HERE,
   entryPoints: ["src/index.ts"],
   bundle: true,
   /*

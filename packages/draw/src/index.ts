@@ -38,6 +38,8 @@ export type {
   DrawHandle,
   DrawProps,
   InkMode,
+  MotionOptions,
+  MotionPreset,
 } from "./components/Draw";
 export type { TooltipOptions } from "./components/Tooltip";
 export { DrawSurface } from "./components/DrawSurface";
