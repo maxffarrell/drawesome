@@ -110,6 +110,7 @@
         class={css.panel}
         data-active={(panel.id === active && !collapsed) || undefined}
         aria-hidden={panel.id === active && !collapsed ? undefined : "true"}
+        inert={panel.id === active && !collapsed ? undefined : true}
       >
         {@render panel.content()}
       </div>

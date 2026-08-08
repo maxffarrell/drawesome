@@ -24,12 +24,32 @@
 
   export type InkMode = "shared" | "per-tool" | "auto";
 
+  /**
+   * `rise` comes in off whichever edge the bar is on and leaves back through it.
+   * `none` is instant, and is also what a reduced-motion setting falls back to.
+   */
+  export type MotionPreset = "rise" | "none";
+
+  export type MotionOptions = {
+    in?: MotionPreset;
+    out?: MotionPreset;
+    /** Milliseconds, for both directions. */
+    duration?: number;
+  };
+
   export type DrawProps = {
     board?: Board;
     background?: string;
     initialStrokes?: Stroke[];
     onChange?: (strokes: Stroke[]) => void;
     chrome?: boolean;
+    /**
+     * How the bar arrives and leaves when `chrome` is switched.
+     *
+     * A single name sets both directions; the object form is for when they
+     * differ. `duration` is milliseconds and covers whichever way is playing.
+     */
+    motion?: MotionPreset | MotionOptions;
     placement?: "bottom" | "left" | "right";
     inset?: number | string;
     align?: "start" | "center" | "end";
@@ -59,6 +79,7 @@
     initialStrokes = [],
     onChange,
     chrome = true,
+    motion,
     placement = "bottom",
     inset,
     align = "center",
@@ -115,6 +136,9 @@
   let grab = { dx: 0, dy: 0 };
   let fold = $state(0);
   let foldOrigin = $state("center");
+  // svelte-ignore state_referenced_locally
+  let live = $state(chrome);
+  let leaving = $state(false);
 
   const startingInk = $derived(theme === "dark" ? "#f2f1ef" : "#111111");
   const paint = $derived(
@@ -140,6 +164,13 @@
   const insetValue = $derived(
     typeof inset === "number" ? `${inset}px` : inset,
   );
+  const move = $derived<MotionOptions>(
+    typeof motion === "string"
+      ? { in: motion, out: motion }
+      : (motion ?? {}),
+  );
+  const enterWith = $derived(move.in ?? "rise");
+  const exitWith = $derived(move.out ?? move.in ?? "rise");
   const pinnedStyle = $derived(
     pin
       ? [
@@ -464,6 +495,19 @@
         ? "center top"
         : "center bottom";
   });
+
+  /* Keep the toolbar mounted while its exit animation plays. */
+  $effect(() => {
+    if (chrome) {
+      leaving = false;
+      live = true;
+    } else if (exitWith === "none") {
+      live = false;
+      leaving = false;
+    } else {
+      leaving = true;
+    }
+  });
 </script>
 
 <div
@@ -485,7 +529,7 @@
     class={css.surface}
   />
 
-  {#if chrome}
+  {#if live}
     <div
       bind:this={barElement}
       role="group"
@@ -493,9 +537,19 @@
       class={css.toolbar}
       data-placement={placement}
       data-align={align}
+      data-motion-in={enterWith}
+      data-motion-out={exitWith}
+      data-leaving={leaving || undefined}
       data-draggable={draggable && !collapsed ? "" : undefined}
       data-held={held ? "" : undefined}
-      style={`--sd-inset:${insetValue ?? "20px"};${pinnedStyle}`}
+      style={`--sd-inset:${insetValue ?? "20px"};${move.duration ? `--sd-motion:${move.duration}ms;` : ""}${pinnedStyle}`}
+      onanimationend={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (leaving) {
+          live = false;
+          leaving = false;
+        }
+      }}
       onpointerdown={barDown}
       onpointermove={barMove}
       onpointerup={barUp}

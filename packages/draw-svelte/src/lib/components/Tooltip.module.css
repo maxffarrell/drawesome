@@ -280,13 +280,13 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .tip {
-    background: #f2f2f4;
-    color: #1a1a1e;
-  }
-  .hint {
-    background: rgb(0 0 0 / 0.12);
-    color: #1a1a1e;
-  }
-}
+/*
+ * Dark in both schemes, deliberately.
+ *
+ * This used to invert with `prefers-color-scheme`, which meant a pale pill on a
+ * pale canvas — the label competing with the paper instead of sitting over it.
+ * A hover label is a passing annotation on the drawing, not part of the page's
+ * surface, and the one thing it has to be is legible against whatever is under
+ * it. That argues for one treatment rather than two. A host that wants
+ * otherwise has `tooltips={{ style }}`, which lands after this.
+ */

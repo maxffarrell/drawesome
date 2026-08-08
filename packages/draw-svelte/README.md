@@ -15,7 +15,7 @@ The native Svelte 5 port of Drawesome: seven pens that behave like pens, an eras
 npm install draw-svelte
 ```
 
-Peer dependency: `svelte >=5`.
+Peer dependency: `svelte >=5.20.0` (`$props.id()` is used to create hydration-safe SVG IDs).
 
 ## Quick start
 
@@ -35,6 +35,8 @@ Peer dependency: `svelte >=5`.
 ## Props
 
 The Svelte component accepts the same drawing, tool, chrome, placement, theme, and customization props as the React `Draw` component. Native Svelte attributes are also supported: use `class` (or the compatibility alias `className`) and pass inline styles as a string.
+
+The `motion` prop also matches the React package: use `"rise"`, `"none"`, or an object such as `{ in: "rise", out: "none", duration: 240 }`.
 
 ```svelte
 <Draw

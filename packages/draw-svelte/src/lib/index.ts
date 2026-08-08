@@ -3,6 +3,8 @@ export type {
   DrawControls,
   DrawProps,
   InkMode,
+  MotionOptions,
+  MotionPreset,
 } from "./components/Draw.svelte";
 export { default as DrawSurface } from "./components/DrawSurface.svelte";
 export type {

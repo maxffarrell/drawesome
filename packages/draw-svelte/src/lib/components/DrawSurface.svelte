@@ -265,6 +265,10 @@
   const onDark = $derived(
     !isPale(background) && background !== "transparent",
   );
+  const cursorRadius = $derived(Math.max(tool.size / 2, 3.5));
+  const cursorStroke = $derived(
+    onDark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.62)",
+  );
 </script>
 
 <svg
@@ -405,31 +409,44 @@
       style="transition: opacity 120ms ease"
       pointer-events="none"
     >
+      {#if !onDark}
+        <circle
+          cx={lastHover.x}
+          cy={lastHover.y}
+          r={cursorRadius}
+          fill="none"
+          stroke="rgba(255,255,255,0.92)"
+          stroke-width="3"
+        />
+      {/if}
       {#if tool.kind === "eraser"}
         <circle
           cx={lastHover.x}
           cy={lastHover.y}
-          r={tool.size / 2}
+          r={cursorRadius}
           fill={onDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
-          stroke={onDark
-            ? "rgba(255,255,255,0.6)"
-            : "rgba(0,0,0,0.55)"}
+          stroke={cursorStroke}
           stroke-width="1"
         />
+        {#if !onDark}
+          <path
+            d={`M${lastHover.x - 3} ${lastHover.y}h6M${lastHover.x} ${lastHover.y - 3}v6`}
+            stroke="rgba(255,255,255,0.9)"
+            stroke-width="2.5"
+          />
+        {/if}
         <path
           d={`M${lastHover.x - 3} ${lastHover.y}h6M${lastHover.x} ${lastHover.y - 3}v6`}
-          stroke="rgba(0,0,0,0.45)"
+          stroke={cursorStroke}
           stroke-width="1"
         />
       {:else}
         <circle
           cx={lastHover.x}
           cy={lastHover.y}
-          r={tool.size / 2}
+          r={cursorRadius}
           fill="none"
-          stroke={onDark
-            ? "rgba(255,255,255,0.62)"
-            : "rgba(0,0,0,0.5)"}
+          stroke={cursorStroke}
           stroke-width="1"
         />
       {/if}
