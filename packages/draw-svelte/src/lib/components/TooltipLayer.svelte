@@ -34,28 +34,28 @@
       style={`width:${controller.width === null ? "auto" : `${controller.width}px`};${controller.style ?? ""}`}
       role="tooltip"
     >
-      {#if controller.leaving}
+      {#key controller.swap}
+        {#if controller.leaving}
+          <div
+            class={css.face}
+            data-leaving
+          >
+            <span class={css.label}>{controller.leaving.label}</span>
+            {#if controller.leaving.hint}
+              <kbd class={css.hint}>{controller.leaving.hint}</kbd>
+            {/if}
+          </div>
+        {/if}
         <div
           class={css.face}
-          data-leaving
-          data-swap={controller.swap}
+          bind:this={controller.face}
         >
-          <span class={css.label}>{controller.leaving.label}</span>
-          {#if controller.leaving.hint}
-            <kbd class={css.hint}>{controller.leaving.hint}</kbd>
+          <span class={css.label}>{controller.shown.label}</span>
+          {#if controller.shown.hint}
+            <kbd class={css.hint}>{controller.shown.hint}</kbd>
           {/if}
         </div>
-      {/if}
-      <div
-        class={css.face}
-        bind:this={controller.face}
-        data-swap={controller.swap}
-      >
-        <span class={css.label}>{controller.shown.label}</span>
-        {#if controller.shown.hint}
-          <kbd class={css.hint}>{controller.shown.hint}</kbd>
-        {/if}
-      </div>
+      {/key}
     </div>
   </div>
 {/if}

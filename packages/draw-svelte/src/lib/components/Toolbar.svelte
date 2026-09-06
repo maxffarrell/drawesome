@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, type Snippet } from "svelte";
   import { PENS } from "../engine/pens.js";
   import type { Pen, PenId, ToolId } from "../engine/types.js";
   import { resolveSwatches } from "../palette.js";
@@ -62,6 +62,8 @@
     onCollapse?: () => void;
     onExpand?: () => void;
     shift?: number;
+    /** Custom content for the minimized disc. */
+    icon?: Snippet;
     onMeasure?: (width: number, height: number) => void;
   };
 
@@ -91,6 +93,7 @@
     onCollapse,
     onExpand,
     shift = 0,
+    icon,
     onMeasure,
   }: ToolbarProps = $props();
 
@@ -528,12 +531,16 @@
 
 {#snippet collapsedContent()}
   <span class={css.peek}>
-    <ToolIcon
-      id={tool.active === "eraser" ? "eraser" : tool.active}
-      color={tool.color}
-      {look}
-      size={42}
-    />
+    {#if icon}
+      {@render icon()}
+    {:else}
+      <ToolIcon
+        id={tool.active === "eraser" ? "eraser" : tool.active}
+        color={tool.color}
+        {look}
+        size={42}
+      />
+    {/if}
   </span>
 {/snippet}
 

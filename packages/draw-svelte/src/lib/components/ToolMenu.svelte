@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import BarSlider from "./BarSlider.svelte";
   import css from "./ToolMenu.module.css";
 
@@ -41,11 +40,12 @@
     };
   }
 
-  onMount(() => {
+  $effect(() => {
+    const currentAnchor = anchor;
     function place() {
-      const box = anchor.getBoundingClientRect();
+      const box = currentAnchor.getBoundingClientRect();
       const width = menu?.offsetWidth ?? 240;
-      const art = anchor.querySelector("svg");
+      const art = currentAnchor.querySelector("svg");
       const drawn = art ? art.getBoundingClientRect() : box;
       const half = width / 2;
       const centre = drawn.left + drawn.width / 2;
@@ -58,7 +58,7 @@
     }
     function away(event: PointerEvent) {
       const target = event.target as Node;
-      if (menu?.contains(target) || anchor.contains(target)) return;
+      if (menu?.contains(target) || currentAnchor.contains(target)) return;
       onClose();
     }
     function key(event: KeyboardEvent) {

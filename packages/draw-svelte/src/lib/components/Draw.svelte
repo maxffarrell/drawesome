@@ -343,7 +343,6 @@
       return;
     }
     event.preventDefault();
-    event.currentTarget?.dispatchEvent;
     try {
       barElement.setPointerCapture(event.pointerId);
     } catch {

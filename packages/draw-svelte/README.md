@@ -68,11 +68,17 @@ The exposed methods are `toSvg`, `toPng`, `download`, `getStrokes`, `setStrokes`
 
 ## Composing the pieces
 
-`DrawSurface`, `Toolbar`, `ToolIcon`, `DrawingController`, and `createDrawing` are exported for custom layouts. The drawing engine exports (`PENS`, `getStroke`, `strokePath`, serialization helpers, types, and palettes) match the original package.
+`DrawSurface`, `Toolbar`, `ToolIcon`, `DrawingController`, and `createDrawing` are exported for custom layouts. A standalone `Toolbar` accepts an `icon` snippet for its minimized disc; the default is the active tool illustration. `DrawHandle` is exported as the type of the instance bound with `bind:this`. The drawing engine exports (`PENS`, `getStroke`, `strokePath`, serialization helpers, types, and palettes) match the original package.
 
 ## Keyboard
 
 Every pen has the same single-key shortcut shown in its tooltip. `E` selects the eraser, `[` and `]` adjust size, and `⌘Z` / `⇧⌘Z` undo and redo. Hold `Shift` while drawing to constrain the stroke to the nearest of eight directions.
+
+## Development and validation
+
+Run the Svelte studio with `pnpm dev:svelte`. It exposes the same configuration and export panel as the React studio; append `?debug=false` for an unobstructed drawing surface.
+
+From the repository root, `pnpm check` runs type checks, production builds, source parity, packed-consumer validation, and the browser suite. See [the validation guide](https://github.com/benjitaylor/drawesome/blob/master/tests/README.md) for setup and coverage.
 
 ## License
 

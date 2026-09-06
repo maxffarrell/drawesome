@@ -53,3 +53,6 @@ export type {
   StrokeShape,
   ToolId,
 } from "./engine/types.js";
+
+/** The public instance exposed by `bind:this` on Draw. */
+export type DrawHandle = import("./components/Draw.svelte").default;
