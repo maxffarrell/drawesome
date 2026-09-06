@@ -5,7 +5,15 @@
     "checkJs": true,
     "jsx": "preserve",
     "moduleResolution": "bundler",
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "draw-svelte": [
+        "../../packages/draw-svelte/src/lib/index.ts"
+      ]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte"
+  ]
 }
