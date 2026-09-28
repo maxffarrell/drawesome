@@ -55,6 +55,24 @@ for (const [index, props] of variants.entries()) {
   });
 }
 
+for (const placement of ["bottom", "left", "right"] as const) {
+  for (const minimizeAlign of ["start", "end"] as const) {
+    test(`React/Svelte collapse target: ${placement}, ${minimizeAlign}`, async ({ page, context }) => {
+      const react = await context.newPage();
+      const props = { placement, align: "center", minimizeAlign };
+      await load(react, "react", props);
+      await load(page, "svelte", props);
+      await button(react, "Hide tools").click();
+      await button(page, "Hide tools").click();
+      await settle(react);
+      await settle(page);
+      const target = (p: Page) => p.getByRole("button", { name: "Show drawing tools" }).boundingBox();
+      expect(await target(page)).toEqual(await target(react));
+      await react.close();
+    });
+  }
+}
+
 for (const framework of ["react", "svelte"]) {
   test(`${framework}: every pen, pressure, erasing, history, SVG and PNG`, async ({ page }) => {
     const errors: string[] = [];

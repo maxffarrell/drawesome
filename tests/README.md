@@ -19,3 +19,7 @@ The browser suite compares React and Svelte screenshots directly in the same bro
 CI runs the same commands on Linux. On macOS 27, Playwright Firefox may exit before loading a page with `Could not find profile folder`; Mozilla tracks this direct-launch problem in [bug 2060476](https://bugzilla.mozilla.org/show_bug.cgi?id=2060476). Chromium and WebKit can still be run locally with `pnpm test:e2e --project=chromium --project=webkit`; keep Firefox enabled in CI.
 
 The root and Svelte projects use TypeScript 6.0.3 because the latest Svelte checker supports TypeScript 5/6, and `svelte-package` needs the compiler's JavaScript API. React projects use TypeScript 7. Other direct dependencies use current stable releases.
+
+## Upstream toolbar regression tests
+
+The upstream `tests/collapse.spec.ts` suite runs alongside the React/Svelte parity suite in all three browsers. It covers every placement, open alignment and collapse direction, clicked and initially collapsed states, interrupted motion, dragging, live props, CSS insets, resizing, chrome remounting, and a mobile dark-mode case. Playwright starts the studio collapse fixture on port 4176 without requiring a global Portless installation. For manual testing, run `pnpm dev` and use **Placement**, **Align**, and **Minimize to** in the studio.

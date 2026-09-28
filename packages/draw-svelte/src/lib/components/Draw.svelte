@@ -53,6 +53,8 @@
     placement?: "bottom" | "left" | "right";
     inset?: number | string;
     align?: "start" | "center" | "end";
+    /** Which end of the edge the bar folds into. Defaults to align, or end when centered. */
+    minimizeAlign?: "start" | "end";
     theme?: "light" | "dark" | "auto";
     drawWhenMinimized?: boolean;
     startMinimized?: boolean;
@@ -83,6 +85,7 @@
     placement = "bottom",
     inset,
     align = "center",
+    minimizeAlign,
     theme = "light",
     drawWhenMinimized = false,
     startMinimized = false,
@@ -135,7 +138,6 @@
   let holding = false;
   let grab = { dx: 0, dy: 0 };
   let fold = $state(0);
-  let foldOrigin = $state("center");
   // svelte-ignore state_referenced_locally
   let live = $state(chrome);
   let leaving = $state(false);
@@ -163,6 +165,10 @@
   );
   const insetValue = $derived(
     typeof inset === "number" ? `${inset}px` : inset,
+  );
+  const foldEnd = $derived(minimizeAlign ?? (align === "start" ? "start" : "end"));
+  const foldOrigin = $derived(
+    placement === "bottom" ? "center" : foldEnd === "start" ? "center top" : "center bottom",
   );
   const move = $derived<MotionOptions>(
     typeof motion === "string"
@@ -466,33 +472,29 @@
   });
 
   $effect(() => {
-    collapsed;
-    placement;
-    pin;
-    if (!collapsed || pin || !root || !barElement) {
+    if (pin) {
       fold = 0;
       return;
     }
-    const rect = root.getBoundingClientRect();
-    const bar = barElement.getBoundingClientRect();
+    if (!live || !root || !barElement) return;
+    measured.w;
+    measured.h;
+    inset;
     const horizontal = placement === "bottom";
-    const span = horizontal ? rect.width : rect.height;
-    const centre = horizontal
-      ? bar.left + bar.width / 2 - rect.left
-      : bar.top + bar.height / 2 - rect.top;
-    const direction = centre / span < 0.48 ? -1 : 1;
-    const gap = horizontal
-      ? rect.bottom - bar.bottom
-      : bar.left - rect.left;
-    const half = horizontal ? 28 : 33;
-    const target =
-      direction < 0 ? gap + half : span - gap - half;
+    const span = horizontal ? root.clientWidth : root.clientHeight;
+    const position = getComputedStyle(barElement);
+    const gap = parseFloat(position[placement]);
+    const half = horizontal ? 42 : 33;
+    const centre = align === "start"
+      ? parseFloat(position[horizontal ? "left" : "top"]) + half
+      : align === "end"
+        ? span - parseFloat(position[horizontal ? "right" : "bottom"]) - half
+        : span / 2;
+    const targetHalf = horizontal ? 28 : 33;
+    const target = foldEnd === "start"
+      ? gap + targetHalf
+      : span - gap - targetHalf;
     fold = target - centre;
-    foldOrigin = horizontal
-      ? "center"
-      : direction < 0
-        ? "center top"
-        : "center bottom";
   });
 
   /* Keep the toolbar mounted while its exit animation plays. */

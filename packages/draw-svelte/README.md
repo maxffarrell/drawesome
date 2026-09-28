@@ -34,7 +34,7 @@ Peer dependency: `svelte >=5.20.0` (`$props.id()` is used to create hydration-sa
 
 ## Props
 
-The Svelte component accepts the same drawing, tool, chrome, placement, theme, and customization props as the React `Draw` component. Native Svelte attributes are also supported: use `class` (or the compatibility alias `className`) and pass inline styles as a string.
+The Svelte component accepts the same drawing, tool, chrome, placement, theme, and customization props as the React `Draw` component, including `minimizeAlign="start" | "end"` to choose which end the toolbar folds toward. Native Svelte attributes are also supported: use `class` (or the compatibility alias `className`) and pass inline styles as a string.
 
 The `motion` prop also matches the React package: use `"rise"`, `"none"`, or an object such as `{ in: "rise", out: "none", duration: 240 }`.
 
