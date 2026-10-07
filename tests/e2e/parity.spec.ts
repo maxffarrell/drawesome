@@ -7,7 +7,6 @@ const load = async (page: Page, framework: string, props = {}) => {
   await page.goto(`/fixtures/${framework}.html?props=${encodeURIComponent(JSON.stringify(props))}`);
   await page.waitForFunction(() => (window as any).fixture?.draw);
   await expect(surface(page)).toBeVisible();
-  await settle(page);
 };
 const update = async (page: Page, props: object) => {
   await page.evaluate((next) => (window as any).fixture.setProps(next), props);
@@ -65,6 +64,9 @@ for (const placement of ["bottom", "left", "right"] as const) {
       const props = { placement, align: "center", minimizeAlign };
       await load(react, "react", props);
       await load(page, "svelte", props);
+      // Collapse from the same fully entered layout in both frameworks.
+      await settle(react);
+      await settle(page);
       await button(react, "Hide tools").click();
       await button(page, "Hide tools").click();
       await settle(react);
