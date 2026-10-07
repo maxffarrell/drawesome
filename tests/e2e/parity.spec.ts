@@ -21,6 +21,8 @@ async function draw(page: Page, y = 160) {
 }
 async function settle(page: Page) {
   await page.mouse.move(0, 0);
+  // Flush framework commits and ResizeObserver layout before inspecting animations.
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   // Tooltips use a delayed exit independent of CSS animations.
   await expect(page.getByRole("tooltip")).toHaveCount(0);
@@ -62,6 +64,9 @@ for (const placement of ["bottom", "left", "right"] as const) {
       const props = { placement, align: "center", minimizeAlign };
       await load(react, "react", props);
       await load(page, "svelte", props);
+      // Collapse from the same fully entered layout in both frameworks.
+      await settle(react);
+      await settle(page);
       await button(react, "Hide tools").click();
       await button(page, "Hide tools").click();
       await settle(react);
