@@ -25,11 +25,16 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        id: browsers
+        background: true
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm test
       - run: pnpm test:package
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Wait for Playwright browsers
+        wait: browsers
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: always()
