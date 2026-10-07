@@ -7,6 +7,7 @@ const load = async (page: Page, framework: string, props = {}) => {
   await page.goto(`/fixtures/${framework}.html?props=${encodeURIComponent(JSON.stringify(props))}`);
   await page.waitForFunction(() => (window as any).fixture?.draw);
   await expect(surface(page)).toBeVisible();
+  await settle(page);
 };
 const update = async (page: Page, props: object) => {
   await page.evaluate((next) => (window as any).fixture.setProps(next), props);
@@ -21,6 +22,8 @@ async function draw(page: Page, y = 160) {
 }
 async function settle(page: Page) {
   await page.mouse.move(0, 0);
+  // Flush framework commits and ResizeObserver layout before inspecting animations.
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   // Tooltips use a delayed exit independent of CSS animations.
   await expect(page.getByRole("tooltip")).toHaveCount(0);
